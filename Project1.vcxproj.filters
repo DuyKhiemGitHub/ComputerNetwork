@@ -27,6 +27,9 @@
     <ClCompile Include="Chunked.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="WebClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ReadMsg.h">
@@ -41,5 +44,10 @@
     <ClInclude Include="Chunked.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Testcase1.txt">
+      <Filter>Source Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

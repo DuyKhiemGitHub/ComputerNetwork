@@ -131,12 +131,16 @@
     <ClCompile Include="ContentLength.cpp" />
     <ClCompile Include="ReadMsg.cpp" />
     <ClCompile Include="Source.cpp" />
+    <ClCompile Include="WebClient.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Chunked.h" />
     <ClInclude Include="ContentLength.h" />
     <ClInclude Include="ReadMsg.h" />
     <ClInclude Include="WebClient.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Testcase1.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
