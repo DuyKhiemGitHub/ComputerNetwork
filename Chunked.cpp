@@ -1,11 +1,10 @@
 #include "Chunked.h"
 
 
-string readChunkedData(int socket) {
+string readChunkedData(SOCKET socket) {
 	int bytesReceived = 0;
 	string Msg = "";
 	char* buffer = new char[BUFFER_SIZE];
-
 	string string_chunkedSize = "";
 	int chunkedSize = 0;
 	do {

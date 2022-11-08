@@ -3,4 +3,4 @@
 #include "ReadMsg.h"
 
 
-string readChunkedData(int socket);
+string readChunkedData(SOCKET socket);

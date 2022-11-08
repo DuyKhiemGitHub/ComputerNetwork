@@ -24,9 +24,11 @@ using namespace std;
 
 
 
-
+SOCKET createSocket();
 string getDomainName(ifstream&  ifs);
 string getPath(ifstream& ifs);
 
 string getFileName(string path);
 string getIpAddress(ifstream& ifs);
+void receiveAFile(SOCKET socket, string domainName, string path, string fileName);
+void receiveSubFolder(vector<string> vector_FileName, SOCKET socket, string domainName, string path);

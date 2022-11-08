@@ -18,7 +18,6 @@ int main() {
 
 
 
-
 	// Test functions 
 	// Hard code IP Address
 
@@ -33,9 +32,9 @@ int main() {
 			string ipAddress = getIpAddress(ifs);
 
 			//Create a Socket to Listen
-			SOCKET connectSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
+			SOCKET connectSocket = createSocket();
 			if (connectSocket == INVALID_SOCKET) {
-				cout << "Can't create listening socket" << endl;
+				cout << ">> Can't create listening socket" << endl;
 				break;
 			}
 
@@ -43,25 +42,29 @@ int main() {
 			sockaddr_in connectSocketAddress;
 			connectSocketAddress.sin_family = AF_INET;
 			connectSocketAddress.sin_port = htons(80);
+			connectSocketAddress.sin_addr.s_addr = inet_addr(ipAddress.c_str());
 
 			cout << "--------------------------------" << endl;
-			cout << "Get: " << fileName << endl << "Host: " << domainName << endl << "IP: " << ipAddress << endl << endl;
-			connectSocketAddress.sin_addr.s_addr = inet_addr(ipAddress.c_str());
+			cout << "Get: " << fileName << endl << "Host: " << domainName << endl << "IP: " << ipAddress << endl;
+
 			// connect to server
 			if (connect(connectSocket, (sockaddr*)&connectSocketAddress, sizeof(connectSocketAddress)) == 0) {
 				cout << ">> Client connected to server. " << endl;
-				string requestToServer = "GET " + path + " HTTP/1.1\r\nHost: " + domainName + "\r\n\r\n";
-				send(connectSocket, requestToServer.c_str(), (int)requestToServer.size() + 1, 0);
 
-				ofstream ofs(fileName, ios::binary);
-				string headerMsg = readHeaderMsg(connectSocket);
-				string dataMsg = readMsgData(connectSocket, headerMsg);
-				ofs.write(dataMsg.c_str(), dataMsg.size());
-				cout << "Loaded file" << endl << endl;
-				ofs.close();
+
+				if (fileName == "") {
+					if (path == "/") receiveAFile(connectSocket, domainName, path, domainName + "_" + "index.html");
+					else {
+						// to do sth...
+					}
+				}
+				else {
+					receiveAFile(connectSocket, domainName, path, domainName + "_" + fileName);
+				}
+
 				int iResult = closesocket(connectSocket);
-				if (iResult == 0) cout << "Closed connection" << endl;
-				
+				if (iResult == 0) cout << ">> Closed connection" << endl;
+
 				Sleep(2000);
 			}
 			else cout << ">> Couldn't connect to server." << endl << endl;

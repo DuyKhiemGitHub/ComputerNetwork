@@ -5,4 +5,4 @@
 
 int contentLength(string headerMsg);
 
-string readMsgData(int socket, string headerMsg);
+string readMsgData(SOCKET socket, string headerMsg);

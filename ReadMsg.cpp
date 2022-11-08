@@ -2,7 +2,7 @@
 
 
 // Receive data with size defined
-string readData(int socket, int size)  {
+string readData(SOCKET socket, int size)  {
 	if (size == 0) return "\r\n";
 
 	char* buffer = new char[BUFFER_SIZE];
@@ -13,7 +13,6 @@ string readData(int socket, int size)  {
 		totalBytes += bytesReceived;
 		data += string(buffer, bytesReceived);
 	} while (totalBytes < size);
-	cout << totalBytes << endl;
 	data.resize(size);
 	delete[] buffer;
 	return data;
@@ -37,7 +36,7 @@ unsigned int convertHexToDec(const std::string& hex)  {
 
 
 // Receive a line of message until find \\r\n
-string readALine(int socket) {
+string readALine(SOCKET socket) {
 	int n = 0;
 	string line;
 	line.resize(0);
@@ -59,7 +58,7 @@ string readALine(int socket) {
 }
 
 // read Header of Message
-string readHeaderMsg(int socket) {
+string readHeaderMsg(SOCKET socket) {
 	string headerMsg = "";
 	string tempMsg = "";
 	do {
@@ -72,7 +71,7 @@ string readHeaderMsg(int socket) {
 // return type of Message
 string return_ContentLength_Or_ChunkedTranferEncoding(string headerMsg) {
 	if (headerMsg.find("Content-Length: ") != -1)
-		return "ContentLength";
+		return "Content-Length";
 	return "ChunkedTranferEncoding";
 }
 
