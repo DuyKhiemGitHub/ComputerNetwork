@@ -1,0 +1,8 @@
+example.com/index.html
+93.184.216.34
+web.stanford.edu/class/cs224w/slides/01-intro.pdf
+171.67.215.200
+gaia.cs.umass.edu/wireshark-labs/alice.txt
+128.119.245.12
+www-net.cs.umass.edu/wireshark-labs/Wireshark_Intro_v8.1.docx
+128.119.245.12

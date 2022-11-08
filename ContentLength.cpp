@@ -19,11 +19,9 @@ string readMsgData(int socket, string headerMsg) {
 	int totalBytesReceived = 0;
 	do {
 		int bytesReceived = recv(socket, Msg, BUFFER_SIZE, 0);
-		cout << bytesReceived << endl;
 		totalBytesReceived += bytesReceived;
 		resString += string(Msg, bytesReceived);
 	} while (totalBytesReceived < length);
-	cout << totalBytesReceived;
 	resString.resize(length);
 	delete[] Msg;
 	return resString;

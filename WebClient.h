@@ -21,3 +21,12 @@ using namespace std;
 
 #pragma comment (lib,"ws2_32.lib")	
 #pragma warning(disable : 4996)
+
+
+
+
+string getDomainName(ifstream&  ifs);
+string getPath(ifstream& ifs);
+
+string getFileName(string path);
+string getIpAddress(ifstream& ifs);
