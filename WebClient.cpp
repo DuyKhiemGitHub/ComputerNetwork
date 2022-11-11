@@ -45,8 +45,9 @@ void receiveAFile(SOCKET socket, string domainName, string path, string fileName
 		bodyMsg = readMsgData(socket, headerMsg);
 	else bodyMsg = readChunkedData(socket);
 	ofstream ofs(fileName, ios::binary);
-	ofs.write(bodyMsg.c_str(), bodyMsg.size());	ofs.close();
+	ofs.write(bodyMsg.c_str(), bodyMsg.size());
 	cout << ">> Loaded file : " << "\"" << fileName << "\" successful" << endl;
+	ofs.close();
 }
 
 void receiveSubFolder(vector<string> vector_FileName,SOCKET socket, string domainName, string path) {

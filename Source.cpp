@@ -68,8 +68,6 @@ int main() {
 				Sleep(2000);
 			}
 			else cout << ">> Couldn't connect to server." << endl << endl;
-			Sleep(2000);
-
 		}
 		ifs.close();
 	}

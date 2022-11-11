@@ -1,0 +1,84 @@
+#undef UNICODE
+
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <stdio.h>
+
+// link with Ws2_32.lib
+#pragma comment (lib, "Ws2_32.lib")
+
+#pragma warning(disable : 4996)
+
+int main()
+{
+
+
+
+
+	//-----------------------------------------
+	// Declare and initialize variables
+	WSADATA wsaData;
+	int iResult;
+
+	DWORD dwRetval;
+
+	int i = 1;
+
+	struct addrinfo* result = NULL;
+	struct addrinfo* ptr = NULL;
+	struct addrinfo hints;
+
+	struct sockaddr_in* sockaddr_ipv4;
+	//    struct sockaddr_in6 *sockaddr_ipv6;
+
+
+	// Validate the parameters
+
+
+	// Initialize Winsock
+	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+	if (iResult != 0) {
+		printf("WSAStartup failed: %d\n", iResult);
+		return 1;
+	}
+
+	//--------------------------------
+	// Setup the hints address info structure
+	// which is passed to the getaddrinfo() function
+	ZeroMemory(&hints, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+
+	//--------------------------------
+	// Call getaddrinfo(). If the call succeeds,
+	// the result variable will hold a linked list
+	// of addrinfo structures containing response
+	// information
+
+	dwRetval = getaddrinfo("example.com", "80", &hints, &result);
+
+	if (dwRetval != 0) {
+		printf("getaddrinfo failed with error: %d\n", dwRetval);
+		WSACleanup();
+		return 1;
+	}
+
+	printf("getaddrinfo returned success\n");
+
+	// Retrieve each address and print out the hex bytes
+	for (ptr = result; ptr != NULL;ptr = ptr->ai_next) {
+
+
+			printf("AF_INET (IPv4)\n");
+			sockaddr_ipv4 = (sockaddr_in*)ptr->ai_addr;
+			printf("\tIPv4 address %s\n",
+				inet_ntoa(sockaddr_ipv4->sin_addr));
+			break;
+		}
+
+	freeaddrinfo(result);
+	WSACleanup();
+
+	return 0;
+}
