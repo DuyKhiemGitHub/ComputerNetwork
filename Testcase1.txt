@@ -1,8 +1,1 @@
-gaia.cs.umass.edu/wireshark-labs/alice.txt
-128.119.245.12
-www.google.com/
-172.217.31.4
-www.bing.com/
-204.79.197.200
-www-net.cs.umass.edu/wireshark-labs/Wireshark_Intro_v8.1.docx
-128.119.245.12
+web.stanford.edu/class/cs224w/slides/

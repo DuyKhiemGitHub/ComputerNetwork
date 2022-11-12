@@ -29,7 +29,7 @@ int main() {
 			string domainName = getDomainName(ifs);
 			string path = "/" + getPath(ifs);
 			string fileName = getFileName(path);
-			string ipAddress = getIpAddress(ifs);
+			string ipAddress = getIpAddress(domainName);
 
 			//Create a Socket to Listen
 			SOCKET connectSocket = createSocket();
@@ -44,27 +44,32 @@ int main() {
 			connectSocketAddress.sin_port = htons(80);
 			connectSocketAddress.sin_addr.s_addr = inet_addr(ipAddress.c_str());
 
-			cout << "--------------------------------" << endl;
 			cout << "Get: " << fileName << endl << "Host: " << domainName << endl << "IP: " << ipAddress << endl;
 
 			// connect to server
 			if (connect(connectSocket, (sockaddr*)&connectSocketAddress, sizeof(connectSocketAddress)) == 0) {
 				cout << ">> Client connected to server. " << endl;
 
+				string requestToServer = "GET " + path + " HTTP/1.1\r\nHost: " + domainName + "\r\n\r\n";
+				cout << requestToServer << endl;
+				send(connectSocket, requestToServer.c_str(), (int)requestToServer.size() + 1, 0);
+				string headerMsg = readHeaderMsg(connectSocket);
+				cout << headerMsg;
 
-				if (fileName == "") {
-					if (path == "/") receiveAFile(connectSocket, domainName, path, domainName + "_" + "index.html");
-					else {
-						// to do sth...
-					}
-				}
-				else {
-					receiveAFile(connectSocket, domainName, path, domainName + "_" + fileName);
-				}
+				//if (fileName == "") {
+				//	if (path == "/") receiveAFile(connectSocket, domainName, path, domainName + "_" + "index.html");
+				//	else {
+				//		// to do sth...
+				//	}
+				//}
+				//else {
+				//	receiveAFile(connectSocket, domainName, path, domainName + "_" + fileName);
+				//}
 
 				int iResult = closesocket(connectSocket);
 				if (iResult == 0) cout << ">> Closed connection" << endl;
 
+				cout << "--------------------------------" << endl;
 				Sleep(2000);
 			}
 			else cout << ">> Couldn't connect to server." << endl << endl;

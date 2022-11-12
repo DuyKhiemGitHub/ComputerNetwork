@@ -14,3 +14,7 @@ string readALine(SOCKET socket);
 string return_ContentLength_Or_ChunkedTranferEncoding(string headerMsg);
 
 string readHeaderMsg(SOCKET socket);
+
+vector<string> returnFileNameInSubfolder(string Msg);
+
+string returnNameOfFile(string source);

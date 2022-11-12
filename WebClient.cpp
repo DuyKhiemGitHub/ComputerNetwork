@@ -30,9 +30,36 @@ string getFileName(string path) {
 	return path.substr(i + 1, path.size() - 1);
 }
 
-string getIpAddress(ifstream& ifs) {
+string getIpAddress(string domainName) {
 	string ipAddress = "";
-	getline(ifs, ipAddress, '\n');
+
+
+	DWORD dwRetval;
+	// Setup the hints address info structure
+// which is passed to the getaddrinfo() function
+
+	struct addrinfo* result = NULL;
+	struct addrinfo hints;
+	ZeroMemory(&hints, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+
+	dwRetval = getaddrinfo(domainName.c_str(), NULL, &hints, &result);
+
+	if (dwRetval != 0) {
+		cout << "getaddrinfo failed with error: " << dwRetval << endl;
+		return "";
+	}
+
+	printf("getaddrinfo returned success\n");
+
+	struct sockaddr_in* sockaddr_ipv4;
+	sockaddr_ipv4 = (sockaddr_in*)result->ai_addr;
+	ipAddress = inet_ntoa(sockaddr_ipv4->sin_addr);
+	cout << "IPv4 address " << ipAddress << endl;
+
+	freeaddrinfo(result);
 	return ipAddress;
 }
 
@@ -50,8 +77,11 @@ void receiveAFile(SOCKET socket, string domainName, string path, string fileName
 	ofs.close();
 }
 
-void receiveSubFolder(vector<string> vector_FileName,SOCKET socket, string domainName, string path) {
-	for (auto x : vector_FileName) {
-		receiveAFile(socket, domainName, path + "/" + x, x);
-	}
+void receiveSubFolder( SOCKET socket, string domainName, string path) {
+	//string headerMsg = readHeaderMsg(socket);
+	//string bodyMsg = "";
+	//bodyMsg = readMsgData(socket, headerMsg);
+	//for (auto x : vector_FileName) {
+	//	receiveAFile(socket, domainName, path + "/" + x, x); 
+	//}
 }

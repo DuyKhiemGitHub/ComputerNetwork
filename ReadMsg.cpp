@@ -1,8 +1,8 @@
 #include "ReadMsg.h"
-
+#include <regex>
 
 // Receive data with size defined
-string readData(SOCKET socket, int size)  {
+string readData(SOCKET socket, int size) {
 	if (size == 0) return "\r\n";
 
 	char* buffer = new char[BUFFER_SIZE];
@@ -22,7 +22,7 @@ string readData(SOCKET socket, int size)  {
 
 
 // convert hex to dec
-unsigned int convertHexToDec(const std::string& hex)  {
+unsigned int convertHexToDec(const std::string& hex) {
 
 	unsigned int dec;
 	std::stringstream ss;
@@ -73,6 +73,32 @@ string return_ContentLength_Or_ChunkedTranferEncoding(string headerMsg) {
 	if (headerMsg.find("Content-Length: ") != -1)
 		return "Content-Length";
 	return "ChunkedTranferEncoding";
+}
+
+
+
+vector<string> returnFileNameInSubfolder(string Msg) {
+	//regex expression for pattern to be searched 
+	regex regexp("[href=\"]{6}[0-9a-zA-Z_-]+\.[a-z]+\"");
+	smatch sm;
+
+	// regex_search that searches pattern regexp in the string mystr  
+	vector<string> resVector;
+	resVector.resize(0);
+	string temp = Msg;
+	while (regex_search(temp, sm, regexp, regex_constants::match_default)) {
+		string result = returnNameOfFile(sm.str());
+		cout << result << endl;
+		resVector.push_back(result);
+		temp = temp.substr(sm.position() + sm.str().size());
+	}
+
+	return resVector;
+}
+
+string returnNameOfFile(string source) {
+	source.pop_back();
+	return source.substr(6);
 }
 
 

@@ -29,6 +29,6 @@ string getDomainName(ifstream&  ifs);
 string getPath(ifstream& ifs);
 
 string getFileName(string path);
-string getIpAddress(ifstream& ifs);
+string getIpAddress(string domainName);
 void receiveAFile(SOCKET socket, string domainName, string path, string fileName);
-void receiveSubFolder(vector<string> vector_FileName, SOCKET socket, string domainName, string path);
+void receiveSubFolder( SOCKET socket, string domainName, string path);
