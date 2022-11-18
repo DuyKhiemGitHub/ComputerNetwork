@@ -4,10 +4,13 @@
 #include "WebClient.h"
 #include "ContentLength.h"
 #include "Chunked.h"
+#include <thread>
+
+static const int THREAD_SIZE = 4;
 
 
+int main(int argv, char** argc) {
 
-int main() {
 
 	//Initialize winsock
 	WSADATA wsData;
@@ -16,73 +19,36 @@ int main() {
 		return 1;
 	}
 
+	if (argv == 1) {
 
+	}
 
-	// Test functions 
-	// Hard code IP Address
+	if (argv == 2) {
+		handleSocket(argc[1]);
+	}
 
-								   //  Reveive message by Content-Length - Test case 1
-
-	{
-		ifstream ifs("Testcase1.txt");
-		while (!ifs.eof()) {
-			string domainName = getDomainName(ifs);
-			string path = "/" + getPath(ifs);
-			string fileName = getFileName(path);
-			string ipAddress = getIpAddress(domainName);
-
-			//Create a Socket to Listen
-			SOCKET connectSocket = createSocket();
-			if (connectSocket == INVALID_SOCKET) {
-				cout << ">> Can't create listening socket" << endl;
-				break;
+	if (argv > 2) {
+		int numOfRequest = argv - 1;
+		vector<thread> threads;
+		threads.resize(0);
+		int i = 1;
+		while (numOfRequest > 0) {
+			while (threads.size() < numOfRequest && threads.size() < THREAD_SIZE) {
+				threads.push_back(thread(handleSocket, argc[i]));
+				i++;
 			}
+			for (auto& thread : threads)
+				if (thread.joinable()) thread.join();
 
-			// Set address
-			sockaddr_in connectSocketAddress;
-			connectSocketAddress.sin_family = AF_INET;
-			connectSocketAddress.sin_port = htons(80);
-			connectSocketAddress.sin_addr.s_addr = inet_addr(ipAddress.c_str());
-
-			cout << "Get: " << fileName << endl << "Host: " << domainName << endl << "IP: " << ipAddress << endl;
-
-			// connect to server
-			if (connect(connectSocket, (sockaddr*)&connectSocketAddress, sizeof(connectSocketAddress)) == 0) {
-				cout << ">> Client connected to server. " << endl;
-
-				string requestToServer = "GET " + path + " HTTP/1.1\r\nHost: " + domainName + "\r\n\r\n";
-				cout << requestToServer << endl;
-				send(connectSocket, requestToServer.c_str(), (int)requestToServer.size() + 1, 0);
-				string headerMsg = readHeaderMsg(connectSocket);
-				cout << headerMsg;
-
-				//if (fileName == "") {
-				//	if (path == "/") receiveAFile(connectSocket, domainName, path, domainName + "_" + "index.html");
-				//	else {
-				//		// to do sth...
-				//	}
-				//}
-				//else {
-				//	receiveAFile(connectSocket, domainName, path, domainName + "_" + fileName);
-				//}
-
-				int iResult = closesocket(connectSocket);
-				if (iResult == 0) cout << ">> Closed connection" << endl;
-
-				cout << "--------------------------------" << endl;
-				Sleep(2000);
-			}
-			else cout << ">> Couldn't connect to server." << endl << endl;
+			numOfRequest = numOfRequest - THREAD_SIZE;
 		}
-		ifs.close();
 	}
 
 
 
-
-
-
+	cout << "End!" << endl;
 	WSACleanup();
+	system("pause");
 
 	return 0;
 }

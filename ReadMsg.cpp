@@ -1,5 +1,5 @@
 #include "ReadMsg.h"
-#include <regex>
+
 
 // Receive data with size defined
 string readData(SOCKET socket, int size) {

@@ -4,33 +4,47 @@
 #include "ReadMsg.h"
 
 
+
 SOCKET createSocket() {
 	SOCKET Socket = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
 	return Socket;
 }
 
 
-string getDomainName(ifstream& ifs) {
-	string res = "";
-	getline(ifs, res, '/');
-	return res;
-}
+void parseURLString(string URL, string& domainName, string& path, string& fileName) {
+	int i = 0;
+	int length = URL.length();
+	while (i < length && URL[i] != '/') domainName += URL[i++];
+	if (i == length || i == length - 1) {
+		path = "/";
+		fileName = "index.html";
+		return;
+	}
 
-string getPath(ifstream& ifs) {
-	string path = "";
-	getline(ifs, path, '\n');
-	return path;
-}
+	while (i < length) path += URL[i++];
+	if (path[path.size() - 1] == '/') {
+		return;
+	}
 
-string getFileName(string path) {
-	int i = (int)path.size();
-	if (i == 0) return "";
+
+	i = (int)path.size();
 	while (path[--i] != '/');
-	if (i == path.size() - 1) return "";
-	return path.substr(i + 1, path.size() - 1);
+	for (i++;i < path.size();i++)
+		fileName += path[i];
+
+	bool isFileName = false;
+	for (i = 0;i < fileName.size();i++)
+		if (fileName[i] == '.') {
+			isFileName = true;
+			break;
+		}
+
+	if (!isFileName) fileName = "index.html";
+
 }
 
-string getIpAddress(string domainName) {
+
+string getIpAddressFromDomainName(string domainName) {
 	string ipAddress = "";
 
 
@@ -63,25 +77,119 @@ string getIpAddress(string domainName) {
 	return ipAddress;
 }
 
-void receiveAFile(SOCKET socket, string domainName, string path, string fileName) {
-	string requestToServer = "GET " + path + " HTTP/1.1\r\nHost: " + domainName + "\r\n\r\n";
-	send(socket, requestToServer.c_str(), (int)requestToServer.size() + 1, 0);
+
+bool sendRequestToServer(SOCKET socket, string request) {
+	if (send(socket, request.c_str(), (int)request.size() + 1, 0) < 0)
+		return false;
+	return true;
+}
+
+string receiveAFile(SOCKET socket) {
+
 	string headerMsg = readHeaderMsg(socket);
 	string bodyMsg = "";
 	if (return_ContentLength_Or_ChunkedTranferEncoding(headerMsg) == "Content-Length")
 		bodyMsg = readMsgData(socket, headerMsg);
 	else bodyMsg = readChunkedData(socket);
-	ofstream ofs(fileName, ios::binary);
-	ofs.write(bodyMsg.c_str(), bodyMsg.size());
-	cout << ">> Loaded file : " << "\"" << fileName << "\" successful" << endl;
+	return bodyMsg;
+}
+
+
+
+void receiveSubFolder(vector<string> vector_fileName, string domainName, string IP, string path, string subFolderName) {
+	string stringPath = domainName + "_" + subFolderName;
+	int status = _mkdir(stringPath.c_str());
+	// TO DO sth...
+
+
+	SOCKET connectSocket = createSocket();
+	if (connectSocket == INVALID_SOCKET) {
+		cout << ">> Can't create listening socket" << endl;
+		return;
+	}
+
+	// Set address
+	sockaddr_in connectSocketAddress;
+	connectSocketAddress.sin_family = AF_INET;
+	connectSocketAddress.sin_port = htons(80);
+	connectSocketAddress.sin_addr.s_addr = inet_addr(IP.c_str());
+
+
+
+	char* currentPath = NULL;
+
+	if ((currentPath = _getcwd(NULL, 0))) {
+	}
+
+	string requestToServer = "";
+	if (connect(connectSocket, (sockaddr*)&connectSocketAddress, sizeof(connectSocketAddress)) == 0) {
+		for (int i = 0;i < vector_fileName.size();i++) {
+			requestToServer = requestToServer + "GET " + path + vector_fileName[i] + " HTTP/1.1\r\nHost: " + domainName + " \r\n\r\n";
+		}
+		sendRequestToServer(connectSocket, requestToServer);
+
+		for (int i = 0;i < vector_fileName.size();i++) {
+			string data = receiveAFile(connectSocket);
+			saveFile(string(currentPath, strlen(currentPath)) + "\\" + stringPath + "\\" + vector_fileName[i], data);
+		}
+	}
+	if (closesocket(connectSocket) == 0) {};
+}
+
+void saveFile(string path, string data) {
+	ofstream ofs(path, ios::binary);
+	ofs.write(data.c_str(), data.size());
+	cout << ">> Loaded file : " << "\"" << path << "\" successful" << endl;
 	ofs.close();
 }
 
-void receiveSubFolder( SOCKET socket, string domainName, string path) {
-	//string headerMsg = readHeaderMsg(socket);
-	//string bodyMsg = "";
-	//bodyMsg = readMsgData(socket, headerMsg);
-	//for (auto x : vector_FileName) {
-	//	receiveAFile(socket, domainName, path + "/" + x, x); 
-	//}
+
+
+void handleSocket(string URL) {
+	string domainName = "";
+	string path = "";
+	string fileName = "";
+	parseURLString(URL, domainName, path, fileName);
+	string IpAddress = getIpAddressFromDomainName(domainName);
+
+	cout << domainName << " " << path << " " << fileName << " " << IpAddress << endl;
+	//Create a Socket to Listen
+	SOCKET connectSocket = createSocket();
+	if (connectSocket == INVALID_SOCKET) {
+		cout << ">> Can't create listening socket" << endl;
+		return;
+	}
+
+	// Set address
+	sockaddr_in connectSocketAddress;
+	connectSocketAddress.sin_family = AF_INET;
+	connectSocketAddress.sin_port = htons(80);
+	connectSocketAddress.sin_addr.s_addr = inet_addr(IpAddress.c_str());
+	if (connect(connectSocket, (sockaddr*)&connectSocketAddress, sizeof(connectSocketAddress)) == 0) {
+		cout << ">> Client connected to server. " << endl;
+		string requestToServer = "GET " + path + " HTTP/1.1\r\nHost: " + domainName + "\r\n\r\n";
+		cout << requestToServer;
+		sendRequestToServer(connectSocket, requestToServer);
+		string data = receiveAFile(connectSocket);
+		if (fileName != "") {
+			saveFile(domainName + "_" + fileName, data);
+		}
+		else {
+			string subFolderName = "";
+			int i = path.size() - 1;
+			while (path[--i] != '/');
+			for (i++;i < path.size() - 2;i++)
+				subFolderName += path[i];
+
+			vector<string> vector_fileName = returnFileNameInSubfolder(data);
+			receiveSubFolder(vector_fileName,domainName,IpAddress,path,subFolderName);
+		}
+
+	}
+
+	else cout << ">> Couldn't connect to server." << endl << endl;
+
+	if (closesocket(connectSocket) == 0) cout << ">> Closed connection" << endl;
+
+	return;
 }

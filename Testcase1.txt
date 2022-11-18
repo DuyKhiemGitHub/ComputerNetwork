@@ -1,1 +1,1 @@
-web.stanford.edu/class/cs224w/slides/
+example.com/index.html

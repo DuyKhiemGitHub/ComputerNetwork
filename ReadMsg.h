@@ -2,6 +2,7 @@
 
 
 #include "WebClient.h"
+#include <regex>
 
 string readData(SOCKET socket, int size) ;
 

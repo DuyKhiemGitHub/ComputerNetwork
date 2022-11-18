@@ -1,4 +1,5 @@
 #include "ContentLength.h"
+#include "ReadMsg.h"
 
 
 
@@ -13,16 +14,5 @@ int contentLength(string headerMsg) {
 
 string readMsgData(SOCKET socket, string headerMsg) {
 	int length = contentLength(headerMsg);
-	char* Msg = new char[BUFFER_SIZE];
-
-	string resString = "";
-	int totalBytesReceived = 0;
-	do {
-		int bytesReceived = recv(socket, Msg, BUFFER_SIZE, 0);
-		totalBytesReceived += bytesReceived;
-		resString += string(Msg, bytesReceived);
-	} while (totalBytesReceived < length);
-	resString.resize(length);
-	delete[] Msg;
-	return resString;
+	return readData(socket,length);
 }

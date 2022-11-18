@@ -12,6 +12,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <direct.h>
 
 
 
@@ -25,10 +26,12 @@ using namespace std;
 
 
 SOCKET createSocket();
-string getDomainName(ifstream&  ifs);
-string getPath(ifstream& ifs);
 
-string getFileName(string path);
-string getIpAddress(string domainName);
-void receiveAFile(SOCKET socket, string domainName, string path, string fileName);
-void receiveSubFolder( SOCKET socket, string domainName, string path);
+void parseURLString(string URL, string& domainName, string& path, string& fileName);
+
+string getIpAddressFromDomainName(string domainName);
+string receiveAFile(SOCKET socket);
+void receiveSubFolder(vector<string> vector_fileName, string domainName, string IP, string path, string subFolderName);
+void saveFile(string path, string data);
+bool sendRequestToServer(SOCKET socket, string request);
+void handleSocket(string URL);
