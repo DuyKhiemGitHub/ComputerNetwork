@@ -40,6 +40,8 @@ int main(int argv, char** argc) {
 			for (auto& thread : threads)
 				if (thread.joinable()) thread.join();
 
+			while (!threads.empty())
+				threads.pop_back();
 			numOfRequest = numOfRequest - THREAD_SIZE;
 		}
 	}
