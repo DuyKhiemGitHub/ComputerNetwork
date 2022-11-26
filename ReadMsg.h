@@ -2,15 +2,20 @@
 
 
 #include "WebClient.h"
+#include <regex>
 
-string readData(int socket, int size) ;
+string readData(SOCKET socket, int size) ;
 
 
 unsigned int convertHexToDec(const std::string& hex) ;
 
 
-string readALine(int socket);
+string readALine(SOCKET socket);
 
 string return_ContentLength_Or_ChunkedTranferEncoding(string headerMsg);
 
-string readHeaderMsg(int socket);
+string readHeaderMsg(SOCKET socket);
+
+vector<string> returnFileNameInSubfolder(string Msg);
+
+string returnNameOfFile(string source);

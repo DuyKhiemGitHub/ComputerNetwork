@@ -1,9 +1,10 @@
 #include "ContentLength.h"
+#include "ReadMsg.h"
 
 
 
 int contentLength(string headerMsg) {
-	int pos = headerMsg.find("Content-Length: ");
+	int pos = (int)headerMsg.find("Content-Length: ");
 	pos += 16;
 	string length = "";
 	while ('0' <= headerMsg[pos] && headerMsg[pos] <= '9')
@@ -11,20 +12,7 @@ int contentLength(string headerMsg) {
 	return stoi(length);
 }
 
-string readMsgData(int socket, string headerMsg) {
+string readMsgData(SOCKET socket, string headerMsg) {
 	int length = contentLength(headerMsg);
-	char* Msg = new char[BUFFER_SIZE];
-
-	string resString = "";
-	int totalBytesReceived = 0;
-	do {
-		int bytesReceived = recv(socket, Msg, BUFFER_SIZE, 0);
-		cout << bytesReceived << endl;
-		totalBytesReceived += bytesReceived;
-		resString += string(Msg, bytesReceived);
-	} while (totalBytesReceived < length);
-	cout << totalBytesReceived;
-	resString.resize(length);
-	delete[] Msg;
-	return resString;
+	return readData(socket,length);
 }
