@@ -61,17 +61,12 @@ string getIpAddressFromDomainName(string domainName) {
 
 	dwRetval = getaddrinfo(domainName.c_str(), NULL, &hints, &result);
 
-	if (dwRetval != 0) {
-		cout << "getaddrinfo failed with error: " << dwRetval << endl;
+	if (dwRetval != 0)
 		return "";
-	}
-
-	printf("getaddrinfo returned success\n");
 
 	struct sockaddr_in* sockaddr_ipv4;
 	sockaddr_ipv4 = (sockaddr_in*)result->ai_addr;
 	ipAddress = inet_ntoa(sockaddr_ipv4->sin_addr);
-	cout << "IPv4 address " << ipAddress << endl;
 
 	freeaddrinfo(result);
 	return ipAddress;
@@ -96,16 +91,16 @@ string receiveAFile(SOCKET socket) {
 
 
 
-void receiveSubFolder(vector<string> vector_fileName, string domainName, string IP, string path, string subFolderName) {
-	string stringPath = domainName + "_" + subFolderName;
-	int status = _mkdir(stringPath.c_str());
+bool receiveSubFolder(vector<string> vector_fileName, string domainName, string IP, string path, string subFolderName) {
+	string directoryName = domainName + "_" + subFolderName;
+	int status = _mkdir(directoryName.c_str());
 	// TO DO sth...
 
 
 	SOCKET connectSocket = createSocket();
 	if (connectSocket == INVALID_SOCKET) {
 		cout << ">> Can't create listening socket" << endl;
-		return;
+		return false;
 	}
 
 	// Set address
@@ -118,28 +113,38 @@ void receiveSubFolder(vector<string> vector_fileName, string domainName, string 
 
 	char* currentPath = NULL;
 
-	if ((currentPath = _getcwd(NULL, 0))) {
+	if (!(currentPath = _getcwd(NULL, 0))) {
+		cout << "Can't get path to binary file!" << endl;
+		return false;
 	}
 
 	string requestToServer = "";
 	if (connect(connectSocket, (sockaddr*)&connectSocketAddress, sizeof(connectSocketAddress)) == 0) {
+		cout << ">> Client connected to server has IP: " << IP << endl;
 		for (int i = 0;i < vector_fileName.size();i++) {
 			requestToServer = requestToServer + "GET " + path + vector_fileName[i] + " HTTP/1.1\r\nHost: " + domainName + " \r\n\r\n";
 		}
-		sendRequestToServer(connectSocket, requestToServer);
+		if (!sendRequestToServer(connectSocket, requestToServer)) {
+			cout << "Server couldn't receive your request!" << endl;
+			return false;
+		};
 
 		for (int i = 0;i < vector_fileName.size();i++) {
 			string data = receiveAFile(connectSocket);
-			saveFile(string(currentPath, strlen(currentPath)) + "\\" + stringPath + "\\" + vector_fileName[i], data);
+			saveFile(string(currentPath, strlen(currentPath)) + "\\" + directoryName + "\\", vector_fileName[i], data);
 		}
 	}
-	if (closesocket(connectSocket) == 0) {};
+	else cout << "";
+	if (closesocket(connectSocket) != 0) {
+		cout << ">> Couldn't close connection has IP " << IP << endl;
+	}
+	return true;
 }
 
-void saveFile(string path, string data) {
-	ofstream ofs(path, ios::binary);
+void saveFile(string path, string fileName, string data) {
+	ofstream ofs(path + fileName, ios::binary);
 	ofs.write(data.c_str(), data.size());
-	cout << ">> Loaded file : " << "\"" << path << "\" successful" << endl;
+	cout << ">> Loaded file " << fileName << " successful" << endl;
 	ofs.close();
 }
 
@@ -152,11 +157,11 @@ void handleSocket(string URL) {
 	parseURLString(URL, domainName, path, fileName);
 	string IpAddress = getIpAddressFromDomainName(domainName);
 
-	cout << domainName << " " << path << " " << fileName << " " << IpAddress << endl;
+
 	//Create a Socket to Listen
 	SOCKET connectSocket = createSocket();
 	if (connectSocket == INVALID_SOCKET) {
-		cout << ">> Can't create listening socket" << endl;
+		cout << ">> Can't create listening socket to server has IP: " << IpAddress << endl;
 		return;
 	}
 
@@ -166,13 +171,29 @@ void handleSocket(string URL) {
 	connectSocketAddress.sin_port = htons(80);
 	connectSocketAddress.sin_addr.s_addr = inet_addr(IpAddress.c_str());
 	if (connect(connectSocket, (sockaddr*)&connectSocketAddress, sizeof(connectSocketAddress)) == 0) {
-		cout << ">> Client connected to server. " << endl;
 		string requestToServer = "GET " + path + " HTTP/1.1\r\nHost: " + domainName + "\r\n\r\n";
-		cout << requestToServer;
-		sendRequestToServer(connectSocket, requestToServer);
+		if (!sendRequestToServer(connectSocket, requestToServer)) {
+			cout << "Server can't receive your request!" << endl;
+			return;
+		};
+
 		string data = receiveAFile(connectSocket);
 		if (fileName != "") {
-			saveFile(domainName + "_" + fileName, data);
+			string fileNameToSave = path;
+			bool check = false;
+			for (auto& i : fileNameToSave) {
+				if (i == '.') {
+					check = true;
+					break;
+				}
+				if (i == '/')
+					i = '_';
+			}
+			if (fileNameToSave[fileNameToSave.length() - 1] == '_') fileNameToSave.pop_back();
+			if (check) 
+				saveFile("", domainName + fileNameToSave, data);
+			else 
+				saveFile("", domainName + fileNameToSave + "_" + fileName, data);
 		}
 		else {
 			string subFolderName = "";
@@ -182,14 +203,19 @@ void handleSocket(string URL) {
 				subFolderName += path[i];
 
 			vector<string> vector_fileName = returnFileNameInSubfolder(data);
-			receiveSubFolder(vector_fileName,domainName,IpAddress,path,subFolderName);
+			if (receiveSubFolder(vector_fileName, domainName, IpAddress, path, subFolderName)) {
+				cout << "Received folder " << subFolderName << " successful " << endl;
+			}
+			else cout << "Couldn't received folder " << subFolderName << endl;
 		}
-
 	}
 
-	else cout << ">> Couldn't connect to server." << endl << endl;
 
-	if (closesocket(connectSocket) == 0) cout << ">> Closed connection" << endl;
+	else cout << ">> Couldn't connect to server has IP " << IpAddress << endl;
+
+	if (closesocket(connectSocket) != 0) {
+		cout << ">> Couldn't close connection has IP " << IpAddress << endl;
+	}
 
 	return;
 }

@@ -88,7 +88,6 @@ vector<string> returnFileNameInSubfolder(string Msg) {
 	string temp = Msg;
 	while (regex_search(temp, sm, regexp, regex_constants::match_default)) {
 		string result = returnNameOfFile(sm.str());
-		cout << result << endl;
 		resVector.push_back(result);
 		temp = temp.substr(sm.position() + sm.str().size());
 	}

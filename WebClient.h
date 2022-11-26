@@ -31,7 +31,7 @@ void parseURLString(string URL, string& domainName, string& path, string& fileNa
 
 string getIpAddressFromDomainName(string domainName);
 string receiveAFile(SOCKET socket);
-void receiveSubFolder(vector<string> vector_fileName, string domainName, string IP, string path, string subFolderName);
-void saveFile(string path, string data);
+bool receiveSubFolder(vector<string> vector_fileName, string domainName, string IP, string path, string subFolderName);
+void saveFile(string path, string fileName, string data);
 bool sendRequestToServer(SOCKET socket, string request);
 void handleSocket(string URL);

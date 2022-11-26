@@ -20,7 +20,7 @@ int main(int argv, char** argc) {
 	}
 
 	if (argv == 1) {
-
+		return 1;
 	}
 
 	if (argv == 2) {
@@ -43,12 +43,6 @@ int main(int argv, char** argc) {
 			numOfRequest = numOfRequest - THREAD_SIZE;
 		}
 	}
-
-
-
-	cout << "End!" << endl;
 	WSACleanup();
-	system("pause");
-
 	return 0;
 }

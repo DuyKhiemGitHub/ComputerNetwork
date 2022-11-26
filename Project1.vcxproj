@@ -139,9 +139,6 @@
     <ClInclude Include="ReadMsg.h" />
     <ClInclude Include="WebClient.h" />
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="Testcase1.txt" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
