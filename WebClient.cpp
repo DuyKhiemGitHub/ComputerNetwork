@@ -12,6 +12,11 @@ SOCKET createSocket() {
 
 
 void parseURLString(string URL, string& domainName, string& path, string& fileName) {
+
+	if (URL[0] == 'h' && URL[1] == 't' && URL[2] == 't' && URL[3] == 'p' && URL[4] == ':' && URL[5] == '/' && URL[6] == '/') URL = URL.substr(7);
+	if (URL[0] == 'h' && URL[1] == 't' && URL[2] == 't' && URL[3] == 'p' && URL[4] == 's' && URL[5] == ':' && URL[6] == '/' && URL[7] == '/') URL = URL.substr(8);
+
+
 	int i = 0;
 	int length = URL.length();
 	while (i < length && URL[i] != '/') domainName += URL[i++];
@@ -86,6 +91,7 @@ string receiveAFile(SOCKET socket) {
 	if (return_ContentLength_Or_ChunkedTranferEncoding(headerMsg) == "Content-Length")
 		bodyMsg = readMsgData(socket, headerMsg);
 	else bodyMsg = readChunkedData(socket);
+
 	return bodyMsg;
 }
 
@@ -114,7 +120,7 @@ bool receiveSubFolder(vector<string> vector_fileName, string domainName, string 
 	char* currentPath = NULL;
 
 	if (!(currentPath = _getcwd(NULL, 0))) {
-		cout << "Can't get path to binary file!" << endl;
+		cout << ">> Can't get path to binary file!" << endl;
 		return false;
 	}
 
@@ -125,13 +131,15 @@ bool receiveSubFolder(vector<string> vector_fileName, string domainName, string 
 			requestToServer = requestToServer + "GET " + path + vector_fileName[i] + " HTTP/1.1\r\nHost: " + domainName + " \r\n\r\n";
 		}
 		if (!sendRequestToServer(connectSocket, requestToServer)) {
-			cout << "Server couldn't receive your request!" << endl;
+			cout << ">> Server couldn't receive your request!" << endl;
 			return false;
 		};
 
 		for (int i = 0;i < vector_fileName.size();i++) {
 			string data = receiveAFile(connectSocket);
-			saveFile(string(currentPath, strlen(currentPath)) + "\\" + directoryName + "\\", vector_fileName[i], data);
+			if (data != "")
+				saveFile(string(currentPath, strlen(currentPath)) + "\\" + directoryName + "\\", vector_fileName[i], data);
+			else cout << ">> Couldn't receive file " << vector_fileName[i] << endl;
 		}
 	}
 	else cout << "";
@@ -144,7 +152,7 @@ bool receiveSubFolder(vector<string> vector_fileName, string domainName, string 
 void saveFile(string path, string fileName, string data) {
 	ofstream ofs(path + fileName, ios::binary);
 	ofs.write(data.c_str(), data.size());
-	cout << ">> Loaded file " << fileName << " successful" << endl;
+	cout << ">> Loaded file " << fileName << " successfully" << endl;
 	ofs.close();
 }
 
@@ -156,6 +164,11 @@ void handleSocket(string URL) {
 	string fileName = "";
 	parseURLString(URL, domainName, path, fileName);
 	string IpAddress = getIpAddressFromDomainName(domainName);
+
+	if (domainName == "") {
+		cout << ">> Couldn't get IP from host " << domainName << endl;
+		return;
+	}
 
 
 	//Create a Socket to Listen
@@ -173,11 +186,12 @@ void handleSocket(string URL) {
 	if (connect(connectSocket, (sockaddr*)&connectSocketAddress, sizeof(connectSocketAddress)) == 0) {
 		string requestToServer = "GET " + path + " HTTP/1.1\r\nHost: " + domainName + "\r\n\r\n";
 		if (!sendRequestToServer(connectSocket, requestToServer)) {
-			cout << "Server can't receive your request!" << endl;
+			cout << ">> Server can't receive your request!" << endl;
 			return;
 		};
 
 		string data = receiveAFile(connectSocket);
+		if (data == "") cout << ">> Couldn't receive file!" << endl;
 		if (fileName != "") {
 			string fileNameToSave = path;
 			bool check = false;
@@ -190,9 +204,9 @@ void handleSocket(string URL) {
 					i = '_';
 			}
 			if (fileNameToSave[fileNameToSave.length() - 1] == '_') fileNameToSave.pop_back();
-			if (check) 
+			if (check)
 				saveFile("", domainName + fileNameToSave, data);
-			else 
+			else
 				saveFile("", domainName + fileNameToSave + "_" + fileName, data);
 		}
 		else {
@@ -204,9 +218,9 @@ void handleSocket(string URL) {
 
 			vector<string> vector_fileName = returnFileNameInSubfolder(data);
 			if (receiveSubFolder(vector_fileName, domainName, IpAddress, path, subFolderName)) {
-				cout << "Received folder " << subFolderName << " successful " << endl;
+				cout << "Received folder " << subFolderName << " successfully " << endl;
 			}
-			else cout << "Couldn't received folder " << subFolderName << endl;
+			else cout << "Couldn't receive folder " << subFolderName << endl;
 		}
 	}
 
@@ -214,7 +228,7 @@ void handleSocket(string URL) {
 	else cout << ">> Couldn't connect to server has IP " << IpAddress << endl;
 
 	if (closesocket(connectSocket) != 0) {
-		cout << ">> Couldn't close connection has IP " << IpAddress << endl;
+		cout << ">> Couldn't close connection to IP " << IpAddress << endl;
 	}
 
 	return;

@@ -11,6 +11,7 @@ string readData(SOCKET socket, int size) {
 	do {
 		int bytesReceived = recv(socket, buffer, min(BUFFER_SIZE, size - totalBytes), 0);
 		totalBytes += bytesReceived;
+		if (bytesReceived < 0 && totalBytes < size) return "";
 		data += string(buffer, bytesReceived);
 	} while (totalBytes < size);
 	data.resize(size);
