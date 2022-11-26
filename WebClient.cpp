@@ -91,7 +91,7 @@ string receiveAFile(SOCKET socket) {
 	string temp = "";
 	while (headerMsg[i] != ' ') temp += headerMsg[i++];
 
-	if (temp != "400") {
+	if (temp != "200") {
 		string error = "";
 		while (headerMsg[++i] != '\r') error += headerMsg[i];
 		cout << ">> Error: " << temp << " - " << error << endl;
