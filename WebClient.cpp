@@ -87,6 +87,18 @@ bool sendRequestToServer(SOCKET socket, string request) {
 string receiveAFile(SOCKET socket) {
 
 	string headerMsg = readHeaderMsg(socket);
+	int i = 9;
+	string temp = "";
+	while (headerMsg[i] != ' ') temp += headerMsg[i++];
+
+	if (temp != "400") {
+		string error = "";
+		while (headerMsg[++i] != '\r') error += headerMsg[i];
+		cout << ">> Error: " << temp << " - " << error << endl;
+		return "";
+	}
+
+
 	string bodyMsg = "";
 	if (return_ContentLength_Or_ChunkedTranferEncoding(headerMsg) == "Content-Length")
 		bodyMsg = readMsgData(socket, headerMsg);
@@ -165,11 +177,10 @@ void handleSocket(string URL) {
 	parseURLString(URL, domainName, path, fileName);
 	string IpAddress = getIpAddressFromDomainName(domainName);
 
-	if (domainName == "") {
+	if (IpAddress == "") {
 		cout << ">> Couldn't get IP from host " << domainName << endl;
 		return;
 	}
-
 
 	//Create a Socket to Listen
 	SOCKET connectSocket = createSocket();
@@ -191,7 +202,10 @@ void handleSocket(string URL) {
 		};
 
 		string data = receiveAFile(connectSocket);
-		if (data == "") cout << ">> Couldn't receive file!" << endl;
+		if (data == "") {
+			cout << ">> Couldn't receive file!" << endl;
+			return;
+		}
 		if (fileName != "") {
 			string fileNameToSave = path;
 			bool check = false;

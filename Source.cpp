@@ -18,7 +18,6 @@ int main(int argv, char** argc) {
 		cout << "Can't initialize winsock!" << endl;
 		return 1;
 	}
-
 	if (argv == 1) {
 		return 1;
 	}
