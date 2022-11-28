@@ -19,7 +19,7 @@ void deleteAFile(string path) {
 void parseURLString(string URL, string& domainName, string& path, string& fileName) {
 	int k = 0;
 	while (URL[k++] == ' ') URL = URL.substr(1);
-	k = URL.length() - 1;
+	k = (int)URL.length() - 1;
 	while (URL[k--] == ' ') URL.pop_back();
 	if (URL[0] == 'h' && URL[1] == 't' && URL[2] == 't' && URL[3] == 'p' && URL[4] == ':' && URL[5] == '/' && URL[6] == '/') URL = URL.substr(7);
 	if (URL[0] == 'h' && URL[1] == 't' && URL[2] == 't' && URL[3] == 'p' && URL[4] == 's' && URL[5] == ':' && URL[6] == '/' && URL[7] == '/') URL = URL.substr(8);
@@ -98,20 +98,16 @@ bool sendRequestToServer(SOCKET socket, string request) {
 }
 
 void receiveAFile(SOCKET socket, string path, string fileName, string domainName) {
-
 	string headerMsg = readHeaderMsg(socket);
 	int i = 9;
 	string temp = "";
 	while (headerMsg[i] != ' ') temp += headerMsg[i++];
-
 	if (temp != "200") {
 		string error = "";
 		while (headerMsg[++i] != '\r') error += headerMsg[i];
 		cout << ">> Coudldn't receive file from host " << domainName << ". Error: " << temp << " - " << error << endl;
 		return;
 	}
-
-
 	if (return_ContentLength_Or_ChunkedTranferEncoding(headerMsg) == "Content-Length")
 		readMsgDataAndSave(socket, headerMsg, path, fileName);
 	else readChunkedDataAndSave(socket, path, fileName);
@@ -129,6 +125,7 @@ bool receiveSubFolder(vector<string> vector_fileName, string domainName, string 
 	SOCKET connectSocket = createSocket();
 	if (connectSocket == INVALID_SOCKET) {
 		cout << ">> Couldn't create listening socket to host " << domainName << " to get folder " << subFolderName << endl;
+		cout << "Error: " << WSAGetLastError << endl;
 		return false;
 	}
 
@@ -162,9 +159,14 @@ bool receiveSubFolder(vector<string> vector_fileName, string domainName, string 
 			receiveAFile(connectSocket, string(currentPath, strlen(currentPath)) + "\\" + directoryName + "\\", vector_fileName[i],domainName);
 		}
 	}
-	else cout << ">> Couldn't connect to host: " << domainName << endl;
+	else {
+		cout << ">> Couldn't connect to host: " << domainName << endl;
+		cout << "Error: " << WSAGetLastError << endl;
+		return false;
+	}
 	if (closesocket(connectSocket) != 0) {
 		cout << ">> Couldn't close connection to host " << domainName << endl;
+		cout << "Error: " << WSAGetLastError << endl;
 	}
 	else cout << ">> Closed connection to host " << domainName << endl;
 	return true;
@@ -181,7 +183,8 @@ void handleSocket(string URL) {
 	string IpAddress = getIpAddressFromDomainName(domainName);
 
 	if (IpAddress == "") {
-		cout << ">> Couldn't get IP from host " << domainName << endl;
+		cout << ">> Couldn't get IP address of host " << domainName << endl;
+		cout << "Error: " << WSAGetLastError << endl;
 		return;
 	}
 
@@ -189,6 +192,7 @@ void handleSocket(string URL) {
 	SOCKET connectSocket = createSocket();
 	if (connectSocket == INVALID_SOCKET) {
 		cout << ">> Couldn't create listening socket to host " << domainName << endl;
+		cout << "Error: " << WSAGetLastError << endl;
 		return;
 	}
 
@@ -201,7 +205,8 @@ void handleSocket(string URL) {
 		cout << ">> Client connected to host " << domainName << endl;
 		string requestToServer = "GET " + path + " HTTP/1.1\r\nHost: " + domainName + "\r\n\r\n";
 		if (!sendRequestToServer(connectSocket, requestToServer)) {
-			cout << ">> Server " << domainName << " couldn't receive your request!" << endl;
+			cout << ">> Host " << domainName << " couldn't receive your request!" << endl;
+			cout << "Error: " << WSAGetLastError << endl;
 			return;
 		};
 
@@ -226,7 +231,7 @@ void handleSocket(string URL) {
 		}
 		else {
 			string subFolderName = "";
-			int i = path.size() - 1;
+			int i = (int)path.size() - 1;
 			while (path[--i] != '/');
 			for (i++;i < path.size() - 2;i++)
 				subFolderName += path[i];
@@ -245,12 +250,16 @@ void handleSocket(string URL) {
 	}
 
 
-	else cout << ">> Couldn't connect to host: " << domainName << endl;
+	else {
+		cout << ">> Couldn't connect to host " << domainName << endl;
+		cout << "Error: " << WSAGetLastError << endl;
+	}
 
 	if (closesocket(connectSocket) != 0) {
-		cout << ">> Couldn't close connection to host: " << domainName << endl;
+		cout << ">> Couldn't close connection to host " << domainName << endl;
+		cout << "Error: " << WSAGetLastError << endl;
 	}
-	else cout << ">> Closed connection to host : " << domainName << endl;
+	else cout << ">> Closed connection to host " << domainName << endl;
 
 	return;
 }

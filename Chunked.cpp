@@ -13,6 +13,7 @@ void readChunkedDataAndSave(SOCKET socket, string path, string fileName) {
 		string msg = readData(socket, chunkedSize + 2);
 		if (msg == "") {
 			deleteAFile(path + fileName);
+			ofs.close();
 			cout << ">> Couldn't load file " << fileName << endl;
 			return;
 		}

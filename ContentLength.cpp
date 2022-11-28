@@ -21,11 +21,13 @@ void readMsgDataAndSave(SOCKET socket, string headerMsg, string path, string fil
 	int totalBytes = 0;
 	do {
 		int bytesReceived = recv(socket, buffer, min(BUFFER_SIZE, length - totalBytes), 0);
-		totalBytes += bytesReceived;
-		if (bytesReceived < 0 && totalBytes < length) {
+		if (bytesReceived == SOCKET_ERROR && totalBytes < length) {
 			deleteAFile(path + fileName);
+			ofs.close();
 			cout << ">> Couldn't load file " << fileName << endl;
+			return;
 		}
+		totalBytes += bytesReceived;
 		ofs.write(buffer, bytesReceived);
 	} while (totalBytes < length);
 	delete[] buffer;
