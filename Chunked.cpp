@@ -10,7 +10,13 @@ void readChunkedDataAndSave(SOCKET socket, string path, string fileName) {
 	do {
 		string_chunkedSize = readALine(socket);
 		chunkedSize = convertHexToDec(string_chunkedSize);
-		ofs.write(readData(socket, chunkedSize + 2).c_str(), chunkedSize + 2); // extra "\r\n
+		string msg = readData(socket, chunkedSize + 2);
+		if (msg == "") {
+			deleteAFile(path + fileName);
+			cout << ">> Couldn't load file " << fileName << endl;
+			return;
+		}
+		ofs.write(msg.c_str(), chunkedSize + 2); // extra "\r\n
 	} while (chunkedSize > 0);
 
 	ofs.close();

@@ -10,6 +10,11 @@ SOCKET createSocket() {
 	return Socket;
 }
 
+void deleteAFile(string path) {
+	wstring wFileName(path.begin(), path.end());
+	DeleteFile(wFileName.c_str());
+}
+
 
 void parseURLString(string URL, string& domainName, string& path, string& fileName) {
 	int k = 0;

@@ -37,3 +37,6 @@ void receiveAFile(SOCKET socket,string path, string fileName,string domainName);
 bool receiveSubFolder(vector<string> vector_fileName, string domainName, string IP, string path, string subFolderName);
 bool sendRequestToServer(SOCKET socket, string request);
 void handleSocket(string URL);
+
+
+void deleteAFile(string path);

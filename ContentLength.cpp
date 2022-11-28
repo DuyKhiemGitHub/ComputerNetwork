@@ -1,5 +1,6 @@
 #include "ContentLength.h"
 #include "ReadMsg.h"
+#include "WebClient.h"
 
 
 
@@ -16,11 +17,15 @@ void readMsgDataAndSave(SOCKET socket, string headerMsg, string path, string fil
 	int length = contentLength(headerMsg);
 
 	char* buffer = new char[BUFFER_SIZE];
-	ofstream ofs(path + fileName,ios::binary);
+	ofstream ofs(path + fileName, ios::binary);
 	int totalBytes = 0;
 	do {
 		int bytesReceived = recv(socket, buffer, min(BUFFER_SIZE, length - totalBytes), 0);
 		totalBytes += bytesReceived;
+		if (bytesReceived < 0 && totalBytes < length) {
+			deleteAFile(path + fileName);
+			cout << ">> Couldn't load file " << fileName << endl;
+		}
 		ofs.write(buffer, bytesReceived);
 	} while (totalBytes < length);
 	delete[] buffer;

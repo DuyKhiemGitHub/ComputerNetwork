@@ -19,6 +19,7 @@ int main(int argv, char** argc) {
 		return 1;
 	}
 
+
 	if (argv == 1) {
 		return 1;
 	}
