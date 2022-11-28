@@ -14,7 +14,7 @@ SOCKET createSocket() {
 void parseURLString(string URL, string& domainName, string& path, string& fileName) {
 	int k = 0;
 	while (URL[k++] == ' ') URL = URL.substr(1);
-	k = URL.length()- 1;
+	k = URL.length() - 1;
 	while (URL[k--] == ' ') URL.pop_back();
 	if (URL[0] == 'h' && URL[1] == 't' && URL[2] == 't' && URL[3] == 'p' && URL[4] == ':' && URL[5] == '/' && URL[6] == '/') URL = URL.substr(7);
 	if (URL[0] == 'h' && URL[1] == 't' && URL[2] == 't' && URL[3] == 'p' && URL[4] == 's' && URL[5] == ':' && URL[6] == '/' && URL[7] == '/') URL = URL.substr(8);
@@ -92,7 +92,7 @@ bool sendRequestToServer(SOCKET socket, string request) {
 	return true;
 }
 
-void receiveAFile(SOCKET socket, string path, string fileName) {
+void receiveAFile(SOCKET socket, string path, string fileName, string domainName) {
 
 	string headerMsg = readHeaderMsg(socket);
 	int i = 9;
@@ -102,7 +102,8 @@ void receiveAFile(SOCKET socket, string path, string fileName) {
 	if (temp != "200") {
 		string error = "";
 		while (headerMsg[++i] != '\r') error += headerMsg[i];
-		cout << ">> Error: " << temp << " - " << error << endl;
+		cout << ">> Coudldn't receive file from host " << domainName << ". Error: " << temp << " - " << error << endl;
+		return;
 	}
 
 
@@ -153,7 +154,7 @@ bool receiveSubFolder(vector<string> vector_fileName, string domainName, string 
 		};
 
 		for (int i = 0;i < vector_fileName.size();i++) {
-			receiveAFile(connectSocket, string(currentPath, strlen(currentPath)) + "\\" + directoryName + "\\", vector_fileName[i]);
+			receiveAFile(connectSocket, string(currentPath, strlen(currentPath)) + "\\" + directoryName + "\\", vector_fileName[i],domainName);
 		}
 	}
 	else cout << ">> Couldn't connect to host: " << domainName << endl;
@@ -214,9 +215,9 @@ void handleSocket(string URL) {
 			}
 			if (fileNameToSave[fileNameToSave.length() - 1] == '_') fileNameToSave.pop_back();
 			if (check)
-				receiveAFile(connectSocket, "", domainName + fileNameToSave);
+				receiveAFile(connectSocket, "", domainName + fileNameToSave,domainName);
 			else
-				receiveAFile(connectSocket, "", domainName + fileNameToSave + "_" + fileName);
+				receiveAFile(connectSocket, "", domainName + fileNameToSave + "_" + fileName,domainName);
 		}
 		else {
 			string subFolderName = "";
