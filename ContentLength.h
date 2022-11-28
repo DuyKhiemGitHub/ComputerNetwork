@@ -5,4 +5,4 @@
 
 int contentLength(string headerMsg);
 
-string readMsgData(SOCKET socket, string headerMsg);
+void readMsgDataAndSave(SOCKET socket, string headerMsg, string path, string fileName);

@@ -12,7 +12,18 @@ int contentLength(string headerMsg) {
 	return stoi(length);
 }
 
-string readMsgData(SOCKET socket, string headerMsg) {
+void readMsgDataAndSave(SOCKET socket, string headerMsg, string path, string fileName) {
 	int length = contentLength(headerMsg);
-	return readData(socket,length);
+
+	char* buffer = new char[BUFFER_SIZE];
+	ofstream ofs(path + fileName,ios::binary);
+	int totalBytes = 0;
+	do {
+		int bytesReceived = recv(socket, buffer, min(BUFFER_SIZE, length - totalBytes), 0);
+		totalBytes += bytesReceived;
+		ofs.write(buffer, bytesReceived);
+	} while (totalBytes < length);
+	delete[] buffer;
+	ofs.close();
+	cout << ">> Loaded file " << fileName << " successfully" << endl;
 }

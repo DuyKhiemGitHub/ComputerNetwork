@@ -17,8 +17,8 @@ string readData(SOCKET socket, int size) {
 	data.resize(size);
 	delete[] buffer;
 	return data;
-
 }
+
 
 
 
