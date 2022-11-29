@@ -182,7 +182,7 @@ void handleSocket(string URL) {
 	parseURLString(URL, domainName, path, fileName);
 	string IpAddress = getIpAddressFromDomainName(domainName);
 
-	if (IpAddress == "") {
+	if (IpAddress == "" || IpAddress == "0.0.0.0") {
 		cout << ">> Couldn't get IP address of host " << domainName << endl;
 		cout << "Error: " << WSAGetLastError << endl;
 		return;
