@@ -13,24 +13,26 @@ int contentLength(string headerMsg) {
 	return stoi(length);
 }
 
-void readMsgDataAndSave(SOCKET socket, string headerMsg, string path, string fileName) {
+bool readMsgDataAndSave(SOCKET socket, string headerMsg, string path, string fileName) {
 	int length = contentLength(headerMsg);
 
 	char* buffer = new char[BUFFER_SIZE];
 	ofstream ofs(path + fileName, ios::binary);
 	int totalBytes = 0;
+	time_t t = clock();
 	do {
 		int bytesReceived = recv(socket, buffer, min(BUFFER_SIZE, length - totalBytes), 0);
 		if (bytesReceived == SOCKET_ERROR && totalBytes < length) {
-			deleteAFile(path + fileName);
 			ofs.close();
+			deleteAFile(path + fileName);
 			cout << ">> Couldn't load file " << fileName << endl;
-			return;
+			return false;
 		}
 		totalBytes += bytesReceived;
 		ofs.write(buffer, bytesReceived);
 	} while (totalBytes < length);
 	delete[] buffer;
 	ofs.close();
-	cout << ">> Loaded file " << fileName << " successfully" << endl;
+	cout << ">> Loaded file " << fileName << " successfully. Time: " << (double)(clock() - t) / CLOCKS_PER_SEC << endl;
+	return true;
 }

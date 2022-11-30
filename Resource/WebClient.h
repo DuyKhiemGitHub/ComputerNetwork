@@ -14,6 +14,7 @@
 #include <vector>
 #include <Windows.h>
 #include <direct.h>
+#include <time.h>
 
 
 
@@ -33,7 +34,7 @@ SOCKET createSocket();
 void parseURLString(string URL, string& domainName, string& path, string& fileName);
 
 string getIpAddressFromDomainName(string domainName);
-void receiveAFile(SOCKET socket,string path, string fileName,string domainName);
+bool receiveAFile(SOCKET socket,string path, string fileName,string domainName);
 bool receiveSubFolder(vector<string> vector_fileName, string domainName, string IP, string path, string subFolderName);
 bool sendRequestToServer(SOCKET socket, string request);
 void handleSocket(string URL);

@@ -97,7 +97,7 @@ bool sendRequestToServer(SOCKET socket, string request) {
 	return true;
 }
 
-void receiveAFile(SOCKET socket, string path, string fileName, string domainName) {
+bool receiveAFile(SOCKET socket, string path, string fileName, string domainName) {
 	string headerMsg = readHeaderMsg(socket);
 	int i = 9;
 	string temp = "";
@@ -106,11 +106,11 @@ void receiveAFile(SOCKET socket, string path, string fileName, string domainName
 		string error = "";
 		while (headerMsg[++i] != '\r') error += headerMsg[i];
 		cout << ">> Coudldn't receive file from host " << domainName << ". Error: " << temp << " - " << error << endl;
-		return;
+		return false;
 	}
 	if (return_ContentLength_Or_ChunkedTranferEncoding(headerMsg) == "Content-Length")
-		readMsgDataAndSave(socket, headerMsg, path, fileName);
-	else readChunkedDataAndSave(socket, path, fileName);
+		return readMsgDataAndSave(socket, headerMsg, path, fileName);
+	else return readChunkedDataAndSave(socket, path, fileName);
 
 }
 
@@ -156,7 +156,15 @@ bool receiveSubFolder(vector<string> vector_fileName, string domainName, string 
 		};
 
 		for (int i = 0;i < vector_fileName.size();i++) {
-			receiveAFile(connectSocket, string(currentPath, strlen(currentPath)) + "\\" + directoryName + "\\", vector_fileName[i],domainName);
+			if (receiveAFile(connectSocket, string(currentPath, strlen(currentPath)) + "\\" + directoryName + "\\", vector_fileName[i], domainName) == false) {
+				for (int j = i + 1; j < vector_fileName.size() ;j++)
+					cout << ">> Couldn't load file " << vector_fileName[j] << endl;
+				if (closesocket(connectSocket) != 0) {
+					cout << ">> Couldn't close connection to host " << domainName << endl;
+					cout << "Error: " << WSAGetLastError << endl;
+				}
+				return false;
+			}
 		}
 	}
 	else {
@@ -245,7 +253,7 @@ void handleSocket(string URL) {
 			if (receiveSubFolder(vector_fileName, domainName, IpAddress, path, subFolderName)) {
 				cout << ">> Received folder " << subFolderName << " successfully " << endl;
 			}
-			else cout << "Couldn't receive folder " << subFolderName << endl;
+			else cout << "Couldn't receive folder or only receive some files in " << subFolderName << endl;
 		}
 	}
 
