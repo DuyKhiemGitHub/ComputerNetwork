@@ -12,6 +12,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <Windows.h>
 #include <direct.h>
 
 
@@ -23,6 +24,8 @@ using namespace std;
 #pragma comment (lib,"ws2_32.lib")	
 #pragma warning(disable : 4996)
 
+const int DEFAULT_PORT = 80;
+
 
 
 SOCKET createSocket();
@@ -30,8 +33,10 @@ SOCKET createSocket();
 void parseURLString(string URL, string& domainName, string& path, string& fileName);
 
 string getIpAddressFromDomainName(string domainName);
-string receiveAFile(SOCKET socket);
+void receiveAFile(SOCKET socket,string path, string fileName,string domainName);
 bool receiveSubFolder(vector<string> vector_fileName, string domainName, string IP, string path, string subFolderName);
-void saveFile(string path, string fileName, string data);
 bool sendRequestToServer(SOCKET socket, string request);
 void handleSocket(string URL);
+
+
+void deleteAFile(string path);

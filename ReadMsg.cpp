@@ -10,15 +10,18 @@ string readData(SOCKET socket, int size) {
 	int totalBytes = 0;
 	do {
 		int bytesReceived = recv(socket, buffer, min(BUFFER_SIZE, size - totalBytes), 0);
+		if (bytesReceived == SOCKET_ERROR && totalBytes < size) {
+			delete[] buffer;
+			return "";
+		}
 		totalBytes += bytesReceived;
-		if (bytesReceived < 0 && totalBytes < size) return "";
 		data += string(buffer, bytesReceived);
 	} while (totalBytes < size);
 	data.resize(size);
 	delete[] buffer;
 	return data;
-
 }
+
 
 
 
@@ -39,8 +42,7 @@ unsigned int convertHexToDec(const std::string& hex) {
 // Receive a line of message until find \\r\n
 string readALine(SOCKET socket) {
 	int n = 0;
-	string line;
-	line.resize(0);
+	string line = "";
 	char c = '\0';
 	while ((n = recv(socket, &c, 1, 0)) > 0) {
 		if (c == '\r') {
@@ -65,7 +67,8 @@ string readHeaderMsg(SOCKET socket) {
 	do {
 		tempMsg = readALine(socket);
 		headerMsg += tempMsg;
-	} while (tempMsg.compare("\r\n"));
+		if (tempMsg == "\r\n") break;
+	} while (1);
 	return headerMsg;
 }
 

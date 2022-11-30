@@ -16,6 +16,7 @@ int main(int argv, char** argc) {
 	WSADATA wsData;
 	if (WSAStartup(MAKEWORD(2, 2), &wsData)) {
 		cout << "Can't initialize winsock!" << endl;
+		cout << "Error: " << WSAGetLastError << endl;
 		return 1;
 	}
 
@@ -40,6 +41,8 @@ int main(int argv, char** argc) {
 			for (auto& thread : threads)
 				if (thread.joinable()) thread.join();
 
+			while (!threads.empty())
+				threads.pop_back();
 			numOfRequest = numOfRequest - THREAD_SIZE;
 		}
 	}
